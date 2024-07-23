@@ -2,10 +2,12 @@
 
 library flutter_neat_and_clean_calendar;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_neat_and_clean_calendar/date_picker_config.dart';
 import 'package:flutter_neat_and_clean_calendar/provider_image.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:flutter_svg/svg.dart';
 // import 'package:flutter_neat_and_clean_calendar/platform_widgets.dart';
 import './date_utils.dart';
 import './simple_gesture_detector.dart';
@@ -204,8 +206,26 @@ class _CalendarState extends State<Calendar> {
     initializeDateFormatting(widget.locale, null).then((_) => setState(() {
           var monthFormat =
               DateFormat('MMMM yyyy', widget.locale).format(_selectedDate);
+          // switch (monthFormat) {
+          //    case  2023':
+          //     displayMonth = 'تشرين ثاني 2023';
+          //     break;
+          //   case 'November 2023':
+          //     displayMonth = 'تشرين ثاني 2023';
+          //     break;
+          //   case 'October 2023':
+          //     displayMonth = 'تشرين أول 2023';
+          //     break;
+          //   default:
+          //     displayMonth = 'تشرين ثاني';
+          // }
           displayMonth =
               '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
+          if (kDebugMode) {
+            print('Month format !!!! : $monthFormat');
+          }
+          // print(' 1 is : ${monthFormat[0].toUpperCase()}');
+          // print('2 is : ${monthFormat.substring(1)}');
         }));
   }
 
@@ -246,6 +266,7 @@ class _CalendarState extends State<Calendar> {
             // Iteration over the range (diferrence between start and end time in days).
             NeatCleanCalendarEvent newEvent = NeatCleanCalendarEvent(
                 event.summary,
+                spots: event.spots,
                 description: event.description,
                 location: event.location,
                 color: event.color,
@@ -298,7 +319,9 @@ class _CalendarState extends State<Calendar> {
             _selectedDate.year, _selectedDate.month, _selectedDate.day)] ??
         [];
 
-    print('eventsMap has ${eventsMap?.length} entries');
+    if (kDebugMode) {
+      print('eventsMap has ${eventsMap?.length} entries');
+    }
   }
 
   Widget get nameAndIconRow {
@@ -397,12 +420,26 @@ class _CalendarState extends State<Calendar> {
                       .toList();
                   var monthFormat = DateFormat('MMMM yyyy', widget.locale)
                       .format(_selectedDate);
+                  // switch (monthFormat) {
+                  //   case 'November 2023':
+                  //     displayMonth = 'تشرين ثاني 2023';
+                  //     break;
+                  //   case 'October 2023':
+                  //     displayMonth = 'تشرين أول 2023';
+                  //     break;
+                  //   default:
+                  //     displayMonth = 'تشرين ثاني';
+                  // }
                   displayMonth =
                       '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
                   _selectedEvents = eventsMap?[DateTime(_selectedDate.year,
                           _selectedDate.month, _selectedDate.day)] ??
                       [];
                 });
+                if (kDebugMode) {
+                  print('Date chosen: ${_selectedDate.toIso8601String()}');
+                }
+                onJumpToDateSelected(_selectedDate);
               }
             });
           }
@@ -632,88 +669,109 @@ class _CalendarState extends State<Calendar> {
                       DateFormat('HH:mm').format(event.startTime).toString();
                   final String end =
                       DateFormat('HH:mm').format(event.endTime).toString();
-                  return Container(
-                    height: widget.eventTileHeight ??
-                        MediaQuery.of(context).size.height * 0.08,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        if (widget.onEventSelected != null) {
-                          widget.onEventSelected!(event);
-                        }
-                      },
-                      onLongPress: () {
-                        if (widget.onEventLongPressed != null) {
-                          widget.onEventLongPressed!(event);
-                        }
-                      },
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Expanded(
-                            flex: event.wide != null && event.wide! == true
-                                ? 25
-                                : 5,
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  // If no image is provided, use the color of the event.
-                                  // If the event has set isDone to true, use the eventDoneColor
-                                  // gets used. If that eventDoneColor is not set, use the
-                                  // primaryColor of the theme.
-                                  color: event.isDone
-                                      ? widget.eventDoneColor ??
-                                          Theme.of(context).primaryColor
-                                      : event.color,
-                                  borderRadius: BorderRadius.circular(10),
-                                  image: event.icon != '' && event.icon != null
-                                      ? DecorationImage(
-                                          fit: BoxFit.cover,
-                                          image: providerImage(event.icon!),
-                                        )
-                                      : null,
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5.0),
+                          color: const Color(0xff393B39)),
+                      height: widget.eventTileHeight ??
+                          MediaQuery.of(context).size.height * 0.08,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (widget.onEventSelected != null) {
+                            widget.onEventSelected!(event);
+                          }
+                        },
+                        onLongPress: () {
+                          if (widget.onEventLongPressed != null) {
+                            widget.onEventLongPressed!(event);
+                          }
+                        },
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            //ayat
+                            // Expanded(
+                            //   flex: event.wide != null && event.wide! == true
+                            //       ? 25
+                            //       : 5,
+                            //   child: Padding(
+                            //     padding: const EdgeInsets.all(4.0),
+                            //     child: Container(
+                            //       decoration: BoxDecoration(
+                            //         color: event.color,
+                            //         borderRadius: BorderRadius.circular(10),
+                            //         image: event.icon != '' &&
+                            //                 event.icon != null
+                            //             ? DecorationImage(
+                            //                 fit: BoxFit.cover,
+                            //                 image: providerImage(event.icon!),
+                            //               )
+                            //             : null,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
+                            // SizedBox(height: 5.0),
+                            Expanded(
+                              flex: 60,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          'assets/Oval _Copy.svg',
+                                          color: event.color,
+                                        ),
+                                        const SizedBox(
+                                          width: 5.0,
+                                        ),
+                                        Text('$start - $end'),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 5.0,
+                                    ),
+                                    Text(event.summary,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall),
+                                    SizedBox(
+                                      height: 10.0,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          event.description,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text('${event.spots} spots left'),
+                                      ],
+                                    )
+                                  ],
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 5.0),
-                          Expanded(
-                            flex: 60,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(event.summary,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall),
-                                  SizedBox(
-                                    height: 10.0,
-                                  ),
-                                  Text(
-                                    event.description,
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          // This Expanded widget gets used to display the start and end time of the
-                          // event.
-                          Expanded(
-                            flex: 30,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              // If the event is all day, then display the word "All day" with no time.
-                              child: event.isAllDay || event.isMultiDay
-                                  ? allOrMultiDayDayTimeWidget(event)
-                                  : singleDayTimeWidget(start, end),
-                            ),
-                          )
-                        ],
+                            // This Expanded widget gets used to display the start and end time of the
+                            // event.
+                            // Expanded(
+                            //   flex: 30,
+                            //   child: Padding(
+                            //     padding: const EdgeInsets.all(8.0),
+                            //     // If the event is all day, then display the word "All day" with no time.
+                            //     child: Text('4 spots left'),
+                            //   ),
+                            // )
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -729,7 +787,9 @@ class _CalendarState extends State<Calendar> {
   }
 
   Column singleDayTimeWidget(String start, String end) {
-    print('SingleDayEvent');
+    if (kDebugMode) {
+      print('SingleDayEvent');
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -741,11 +801,15 @@ class _CalendarState extends State<Calendar> {
   }
 
   Column allOrMultiDayDayTimeWidget(NeatCleanCalendarEvent event) {
-    print('=== Summary: ${event.summary}');
+    if (kDebugMode) {
+      print('=== Summary: ${event.summary}');
+    }
     String start = DateFormat('HH:mm').format(event.startTime).toString();
     String end = DateFormat('HH:mm').format(event.endTime).toString();
     if (event.isAllDay) {
-      print('AllDayEvent - ${event.summary}');
+      if (kDebugMode) {
+        print('AllDayEvent - ${event.summary}');
+      }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -760,16 +824,22 @@ class _CalendarState extends State<Calendar> {
     if (event.multiDaySegement == MultiDaySegement.first) {
       // The event begins on the selcted day.
       // Just show the start time, no end time.
-      print('MultiDayEvent: start - ${event.summary}');
+      if (kDebugMode) {
+        print('MultiDayEvent: start - ${event.summary}');
+      }
       end = '';
     } else if (event.multiDaySegement == MultiDaySegement.last) {
       // The event ends on the selcted day.
       // Just show the end time, no start time.
-      print('MultiDayEvent: end - ${event.summary}');
+      if (kDebugMode) {
+        print('MultiDayEvent: end - ${event.summary}');
+      }
       start = widget.multiDayEndText;
     } else {
       // The event spans multiple days.
-      print('MultiDayEvent: middle - ${event.summary}');
+      if (kDebugMode) {
+        print('MultiDayEvent: middle - ${event.summary}');
+      }
       start = widget.allDayEventText;
       end = '';
     }
@@ -844,6 +914,16 @@ class _CalendarState extends State<Calendar> {
       selectedMonthsDays = _daysInMonth(_selectedDate);
       var monthFormat =
           DateFormat('MMMM yyyy', widget.locale).format(_selectedDate);
+      // switch (monthFormat) {
+      //   case 'November 2023':
+      //     displayMonth = 'تشرين ثاني 2023';
+      //     break;
+      //   case 'October 2023':
+      //     displayMonth = 'تشرين أول 2023';
+      //     break;
+      //   default:
+      //     displayMonth = 'تشرين ثاني';
+      // }
       displayMonth =
           '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
       _selectedEvents = eventsMap?[DateTime(
@@ -870,6 +950,16 @@ class _CalendarState extends State<Calendar> {
       selectedMonthsDays = _daysInMonth(_selectedDate);
       var monthFormat =
           DateFormat('MMMM yyyy', widget.locale).format(_selectedDate);
+      // switch (monthFormat) {
+      //   case 'November 2023':
+      //     displayMonth = 'تشرين ثاني 2023';
+      //     break;
+      //   case 'October 2023':
+      //     displayMonth = 'تشرين أول 2023';
+      //     break;
+      //   default:
+      //     displayMonth = 'تشرين ثاني';
+      // }
       displayMonth =
           '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
       _selectedEvents = eventsMap?[DateTime(
@@ -891,6 +981,16 @@ class _CalendarState extends State<Calendar> {
               .toList();
       var monthFormat =
           DateFormat('MMMM yyyy', widget.locale).format(_selectedDate);
+      // switch (monthFormat) {
+      //   case 'November 2023':
+      //     displayMonth = 'تشرين ثاني 2023';
+      //     break;
+      //   case 'October 2023':
+      //     displayMonth = 'تشرين أول 2023';
+      //     break;
+      //   default:
+      //     displayMonth = 'تشرين ثاني';
+      // }
       displayMonth =
           '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
       _selectedEvents = eventsMap?[DateTime(
@@ -912,6 +1012,16 @@ class _CalendarState extends State<Calendar> {
               .toList();
       var monthFormat =
           DateFormat('MMMM yyyy', widget.locale).format(_selectedDate);
+      // switch (monthFormat) {
+      //   case 'November 2023':
+      //     displayMonth = 'تشرين ثاني 2023';
+      //     break;
+      //   case 'October 2023':
+      //     displayMonth = 'تشرين أول 2023';
+      //     break;
+      //   default:
+      //     displayMonth = 'تشرين ثاني';
+      // }
       displayMonth =
           '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
       _selectedEvents = eventsMap?[DateTime(
@@ -942,6 +1052,16 @@ class _CalendarState extends State<Calendar> {
       selectedMonthsDays = _daysInMonth(_selectedDate);
       var monthFormat =
           DateFormat('MMMM yyyy', widget.locale).format(_selectedDate);
+      // switch (monthFormat) {
+      //   case 'November 2023':
+      //     displayMonth = 'تشرين ثاني 2023';
+      //     break;
+      //   case 'October 2023':
+      //     displayMonth = 'تشرين أول 2023';
+      //     break;
+      //   default:
+      //     displayMonth = 'تشرين ثاني';
+      // }
       displayMonth =
           '${monthFormat[0].toUpperCase()}${monthFormat.substring(1)}';
       _selectedEvents = eventsMap?[DateTime(
@@ -993,7 +1113,9 @@ class _CalendarState extends State<Calendar> {
   // but typically this method will store the selected date and then call a
   // user-defined callback function based on this date.
   void handleSelectedDateAndUserCallback(DateTime day) {
-    print('daySelected: $day');
+    if (kDebugMode) {
+      print('daySelected: $day');
+    }
     // Fire onDateSelected callback and onMonthChanged callback.
     _launchDateSelectionCallback(day);
 
