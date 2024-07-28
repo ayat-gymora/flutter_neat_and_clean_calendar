@@ -676,7 +676,7 @@ class _CalendarState extends State<Calendar> {
                           borderRadius: BorderRadius.circular(5.0),
                           color: const Color(0xff393B39)),
                       height: widget.eventTileHeight ??
-                          MediaQuery.of(context).size.height * 0.09,
+                          MediaQuery.of(context).size.height * 0.12,
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
